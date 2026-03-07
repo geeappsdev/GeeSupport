@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FORMATS, TONES, PRODUCT_DOMAINS, INTERNAL_FORMAT_IDS } from '../constants';
 import GeeLogo from './GeeLogo';
+import EasterEggMusic from './EasterEggMusic';
 
 interface Props {
   activeFormat: string;
@@ -23,6 +24,7 @@ interface Props {
   position?: 'left' | 'right';
   isOpen?: boolean;
   onClose?: () => void;
+  isMusicUnlocked?: boolean;
 }
 
 const Sidebar = ({ 
@@ -44,7 +46,8 @@ const Sidebar = ({
     onNewChat,
     position = 'left',
     isOpen = false,
-    onClose
+    onClose,
+    isMusicUnlocked = false
 }: Props) => {
   const [hoveredItem, setHoveredItem] = useState<{
       type: 'tone' | 'domain' | 'format';
@@ -282,6 +285,8 @@ const Sidebar = ({
                     </>
                 )}
             </div>
+
+            {isMusicUnlocked && <EasterEggMusic />}
           </div>
 
           <div className="p-4 border-t border-sidebar-border bg-sidebar-bg space-y-1" id="sidebar-footer">

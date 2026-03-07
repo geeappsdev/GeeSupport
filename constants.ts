@@ -53,7 +53,7 @@ export const FORMATS: Format[] = [
     description: 'Full customer reply paired with a detailed internal investigation record.', 
     icon: '✉️',
     category: 'draft',
-    modelTier: 'pro',
+    modelTier: 'standard',
     instruction: `**TEMPLATE: EMAIL+PWR validation**\nGenerates the customer email draft PLUS the full internal investigation record.\n\n... (standard headers) ...\n\n**Email body:**\nHi there,\n\n[ASA Protocol Response]\n\n[Standard Signature Block]`
   },
   { 
@@ -62,6 +62,30 @@ export const FORMATS: Format[] = [
     description: 'Professional follow-up for non-responsive users.', 
     icon: '⏳',
     category: 'draft',
+    modelTier: 'lite'
+  },
+  { 
+    id: 'BND', 
+    name: 'Bad News Delivery', 
+    description: 'Structured SPIKES protocol delivery for policy-related or negative updates.', 
+    icon: '🚫',
+    category: 'draft',
+    modelTier: 'standard'
+  },
+  { 
+    id: 'EM', 
+    name: 'Empathy Statements', 
+    description: 'Context-specific empathy snippets to de-escalate high-stress situations.', 
+    icon: '💙',
+    category: 'snippet',
+    modelTier: 'lite'
+  },
+  { 
+    id: 'ACK', 
+    name: 'Acknowledgement', 
+    description: 'Short, professional acknowledgement of receiving information or requests.', 
+    icon: '✅',
+    category: 'snippet',
     modelTier: 'lite'
   },
   { 
@@ -78,7 +102,23 @@ export const FORMATS: Format[] = [
     description: 'Deep internal record capturing technical steps and account state.', 
     icon: '🔍',
     category: 'internal',
-    modelTier: 'pro'
+    modelTier: 'standard'
+  },
+  { 
+    id: 'QS', 
+    name: 'Short Summary', 
+    description: 'High-speed summary of account IDs and key issue status.', 
+    icon: '⚡',
+    category: 'internal',
+    modelTier: 'lite'
+  },
+  { 
+    id: 'CF', 
+    name: 'Consult', 
+    description: 'Structured request for internal departmental consultation.', 
+    icon: '🤝',
+    category: 'internal',
+    modelTier: 'standard'
   }
 ];
 

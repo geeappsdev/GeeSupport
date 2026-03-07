@@ -61,6 +61,11 @@ const App = () => {
   const [isPrivacyPromoOpen, setIsPrivacyPromoOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+  const [isAdminStatsOpen, setIsAdminStatsOpen] = useState(false);
+  const [isMusicUnlocked, setIsMusicUnlocked] = useState(false);
+
+  const [trainingClickCount, setTrainingClickCount] = useState(0);
+  const trainingClickTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [hasSeenWalkthrough, setHasSeenWalkthrough] = useLocalStorage('has_seen_walkthrough_v1', false);
   const [privacyAdStats, setPrivacyAdStats] = useLocalStorage('privacy_ad_stats', { date: '', count: 0, lastShown: 0 });
@@ -117,6 +122,20 @@ const App = () => {
     mediaQuery.addEventListener('change', applyTheme);
     return () => mediaQuery.removeEventListener('change', applyTheme);
   }, [userProfile.mode]);
+
+  const handleToggleTrainingMode = () => {
+      setIsTrainingMode(prev => !prev);
+      setTrainingClickCount(prev => {
+          const newCount = prev + 1;
+          if (trainingClickTimeoutRef.current) clearTimeout(trainingClickTimeoutRef.current);
+          if (newCount >= 5) {
+              setIsMusicUnlocked(true);
+              return 0;
+          }
+          trainingClickTimeoutRef.current = setTimeout(() => { setTrainingClickCount(0); }, 800);
+          return newCount;
+      });
+  };
 
   const processGeneration = async (prompt: string, attachments: any[], aiMsgId: number, historyMessages: Message[]) => {
       setIsLoading(true);
@@ -215,11 +234,12 @@ const App = () => {
         <Sidebar 
             activeFormat={activeFormat} activeTone={activeTone} activeProductDomains={activeProductDomains}
             onSelectFormat={setActiveFormat} onSelectTone={setActiveTone} onToggleProductDomain={(id) => setActiveProductDomains(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])}
-            isTrainingMode={isTrainingMode} onToggleTrainingMode={() => setIsTrainingMode(!isTrainingMode)}
+            isTrainingMode={isTrainingMode} onToggleTrainingMode={handleToggleTrainingMode}
             onOpenSettings={() => setIsSettingsOpen(true)} onOpenRules={() => setIsRulesOpen(true)} onOpenPrivacy={() => setIsPrivacyModalOpen(true)}
             onOpenWalkthrough={() => setIsWalkthroughOpen(true)} onOpenGuide={() => setIsGuideOpen(true)} onOpenChangelog={() => setIsChangelogOpen(true)}
             onOpenCost={() => setIsCostModalOpen(true)}
             onNewChat={() => setIsNewSessionModalOpen(true)} position={userProfile.layout} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)}
+            isMusicUnlocked={isMusicUnlocked}
         />
         <main className="flex-1 min-w-0 h-full relative z-0">
             <ChatPanel 

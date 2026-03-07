@@ -44,11 +44,15 @@ const isRateLimitError = (error: any) => {
     return (
         code === 429 || 
         status === 429 || 
+        code === 504 ||
+        status === 504 ||
         status === 'RESOURCE_EXHAUSTED' ||
         (typeof message === 'string' && (
             message.includes('429') || 
+            message.includes('504') ||
             message.includes('Resource has been exhausted') || 
-            message.includes('Quota exceeded')
+            message.includes('Quota exceeded') ||
+            message.includes('Gateway Timeout')
         ))
     );
 };
@@ -57,11 +61,11 @@ async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 3, delay = 10
   try {
     return await fn();
   } catch (error: any) {
-    const isRateLimit = isRateLimitError(error);
+    const isRetryable = isRateLimitError(error);
     const { code, status } = getErrorDetails(error);
-    const isServerError = code === 503 || status === 503;
+    const isServerError = code === 503 || status === 503 || code === 504 || status === 504;
 
-    if (retries > 0 && (isRateLimit || isServerError)) {
+    if (retries > 0 && (isRetryable || isServerError)) {
       console.warn(`Gemini API transient error (${code || status}). Retrying in ${delay}ms... (Attempts left: ${retries})`);
       await sleep(delay);
       return retryWithBackoff(fn, retries - 1, delay * 2);
@@ -159,7 +163,7 @@ ${coreRules}
   }
 
   let primaryModel = 'gemini-3-flash-preview';
-  if (currentTier === 'pro') primaryModel = 'gemini-3-pro-preview';
+  if (currentTier === 'pro') primaryModel = 'gemini-3.1-pro-preview';
   else if (currentTier === 'lite') primaryModel = 'gemini-flash-lite-latest';
   
   const fallbackModel = 'gemini-3-flash-preview';
@@ -185,12 +189,14 @@ ${coreRules}
       try {
           stream = await retryWithBackoff(() => makeRequest(primaryModel), 1);
       } catch (primaryError: any) {
-           if (primaryModel !== fallbackModel && isRateLimitError(primaryError)) {
-               stream = await retryWithBackoff(() => makeRequest(fallbackModel), 3);
+           // Fallback to Flash for ANY error if primary was Pro
+           if (primaryModel !== fallbackModel) {
+               console.warn("Primary model failed, falling back to Flash...", primaryError.message);
+               stream = await retryWithBackoff(() => makeRequest(fallbackModel), 2);
            } else throw primaryError;
       }
   } catch (connectionError: any) {
-      if (isRateLimitError(connectionError)) throw new Error("High traffic. Try again later.");
+      if (isRateLimitError(connectionError)) throw new Error("High traffic or timeout. Try again later.");
       throw connectionError;
   }
 
